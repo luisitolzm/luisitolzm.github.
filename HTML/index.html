@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador de ID Pro</title>
+<title>Generador de ID Pro + ACL</title>
 
 <style>
 *{
@@ -20,7 +20,7 @@ body{
     align-items:center;
     background: linear-gradient(-45deg,#ff0080,#7928ca,#2afadf,#00ff88);
     background-size:400% 400%;
-    animation: bg 12s ease infinite;
+    animation:bg 12s ease infinite;
 }
 
 @keyframes bg{
@@ -31,15 +31,15 @@ body{
 
 .box{
     background:#fff;
-    width:350px;
+    width:370px;
     padding:30px;
     border-radius:15px;
     box-shadow:0 15px 35px rgba(0,0,0,.3);
     text-align:center;
 }
 
-h2,h1{
-    margin-bottom:20px;
+h1,h2{
+    margin-bottom:15px;
     color:#7928ca;
 }
 
@@ -87,6 +87,8 @@ button:hover{
     display:none;
 }
 
+.hidden{display:none}
+
 #generatedID{
     font-size:22px;
     margin:15px 0;
@@ -94,8 +96,12 @@ button:hover{
     letter-spacing:2px;
 }
 
-.hidden{
-    display:none;
+.userBox{
+    background:#f3f3f3;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+    font-size:14px;
 }
 </style>
 </head>
@@ -124,20 +130,32 @@ button:hover{
 
 <!-- GENERADOR -->
 <div class="box hidden" id="generatorBox">
-    <h1>Generador de ID</h1>
+    <h1>Panel Principal</h1>
+
+    <div class="userBox">
+        Usuario: <b id="userName">---</b><br>
+        ACL: <b id="aclStatus">SIN ACL</b>
+    </div>
+
     <button onclick="generateID()">Generar ID</button>
     <div id="generatedID">---</div>
     <button onclick="copyID()">Copiar ID</button>
+
+    <hr style="margin:15px 0">
+
+    <input id="aclName" placeholder="Nombre del ACL">
+    <button onclick="giveACL()">DAR ACL</button>
+
     <button onclick="logout()">Cerrar sesión</button>
 </div>
 
 <script>
-// SESIÓN ACTIVA
+// AUTO LOGIN
 if(localStorage.getItem("session")==="true"){
     showGenerator()
 }
 
-// CAMBIOS DE PANTALLA
+// CAMBIOS
 function showRegister(){
     loginBox.classList.add("hidden")
     registerBox.classList.remove("hidden")
@@ -152,6 +170,12 @@ function showGenerator(){
     loginBox.classList.add("hidden")
     registerBox.classList.add("hidden")
     generatorBox.classList.remove("hidden")
+
+    const user = localStorage.getItem("user")
+    userName.textContent = user
+
+    const acl = localStorage.getItem("acl_"+user)
+    aclStatus.textContent = acl ? acl : "SIN ACL"
 }
 
 // REGISTRO
@@ -175,10 +199,7 @@ function login(){
     const user = loginUser.value
     const pass = loginPass.value
 
-    const savedUser = localStorage.getItem("user")
-    const savedPass = localStorage.getItem("pass")
-
-    if(user===savedUser && pass===savedPass){
+    if(user===localStorage.getItem("user") && pass===localStorage.getItem("pass")){
         localStorage.setItem("session","true")
         showGenerator()
     }else{
@@ -209,6 +230,21 @@ function copyID(){
     }
     navigator.clipboard.writeText(generatedID.textContent)
     alert("ID copiado ✔")
+}
+
+// DAR ACL
+function giveACL(){
+    const acl = aclName.value.trim()
+    const user = localStorage.getItem("user")
+
+    if(!acl){
+        alert("Escribe el nombre del ACL")
+        return
+    }
+
+    localStorage.setItem("acl_"+user,acl)
+    aclStatus.textContent = acl
+    alert("ACL asignado correctamente 🔐")
 }
 </script>
 
