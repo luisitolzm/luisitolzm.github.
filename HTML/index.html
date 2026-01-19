@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador de ID Pro + ACL</title>
+<title>Generador ID Pro + ACL</title>
 
 <style>
 *{
@@ -14,7 +14,7 @@
 }
 
 body{
-    height:100vh;
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -31,33 +31,41 @@ body{
 
 .box{
     background:#fff;
-    width:370px;
+    width:400px;
     padding:30px;
-    border-radius:15px;
-    box-shadow:0 15px 35px rgba(0,0,0,.3);
+    border-radius:18px;
+    box-shadow:0 20px 40px rgba(0,0,0,.35);
     text-align:center;
 }
 
 h1,h2{
-    margin-bottom:15px;
     color:#7928ca;
+    margin-bottom:15px;
+}
+
+hr{
+    margin:18px 0;
+    border:none;
+    height:2px;
+    background:linear-gradient(to right,#7928ca,#ff0080);
+    border-radius:5px;
 }
 
 input{
     width:100%;
-    padding:12px;
+    padding:13px;
     margin:8px 0;
-    border-radius:8px;
+    border-radius:10px;
     border:1px solid #ccc;
     font-size:15px;
 }
 
 button{
     width:100%;
-    padding:12px;
+    padding:13px;
     margin-top:10px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     background:#7928ca;
     color:#fff;
     font-weight:bold;
@@ -77,9 +85,7 @@ button:hover{
     font-size:14px;
 }
 
-.link:hover{
-    text-decoration:underline;
-}
+.link:hover{text-decoration:underline}
 
 .error{
     color:red;
@@ -89,19 +95,31 @@ button:hover{
 
 .hidden{display:none}
 
-#generatedID{
-    font-size:22px;
-    margin:15px 0;
-    font-weight:bold;
-    letter-spacing:2px;
+.userBox{
+    background:#f4f4f4;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    line-height:1.6;
 }
 
-.userBox{
-    background:#f3f3f3;
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
-    font-size:14px;
+.badge{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.admin{background:#2afadf;color:#000}
+.normal{background:#ddd;color:#000}
+
+#generatedID{
+    font-size:24px;
+    margin:15px 0;
+    font-weight:bold;
+    letter-spacing:3px;
+    color:#ff0080;
 }
 </style>
 </head>
@@ -110,7 +128,8 @@ button:hover{
 
 <!-- LOGIN -->
 <div class="box" id="loginBox">
-    <h2>Iniciar Sesión</h2>
+    <h2>🔐 Iniciar Sesión</h2>
+    <hr>
     <input id="loginUser" placeholder="Usuario">
     <input id="loginPass" type="password" placeholder="Contraseña">
     <button onclick="login()">Entrar</button>
@@ -120,7 +139,8 @@ button:hover{
 
 <!-- REGISTRO -->
 <div class="box hidden" id="registerBox">
-    <h2>Registro</h2>
+    <h2>📝 Registro</h2>
+    <hr>
     <input id="regUser" placeholder="Nuevo usuario">
     <input id="regPass" type="password" placeholder="Nueva contraseña">
     <button onclick="register()">Crear cuenta</button>
@@ -128,25 +148,34 @@ button:hover{
     <div class="link" onclick="showLogin()">Ya tengo cuenta</div>
 </div>
 
-<!-- GENERADOR -->
+<!-- PANEL -->
 <div class="box hidden" id="generatorBox">
-    <h1>Panel Principal</h1>
+    <h1>⚙️ Panel Principal</h1>
+    <hr>
 
     <div class="userBox">
-        Usuario: <b id="userName">---</b><br>
-        ACL: <b id="aclStatus">SIN ACL</b>
+        👤 Usuario: <b id="userName">---</b><br>
+        🔐 ACL: <b id="aclStatus">SIN ACL</b><br>
+        ⭐ Rol: <span id="roleBadge" class="badge normal">USUARIO</span>
     </div>
 
-    <button onclick="generateID()">Generar ID</button>
+    <button onclick="generateID()">🎲 Generar ID</button>
     <div id="generatedID">---</div>
-    <button onclick="copyID()">Copiar ID</button>
+    <button onclick="copyID()">📋 Copiar ID</button>
 
-    <hr style="margin:15px 0">
+    <div id="aclPanel" class="hidden">
+        <hr>
+        <h2>🔑 Panel ACL</h2>
+        <input id="aclName" placeholder="Nombre del ACL">
+        <button onclick="giveACL()">DAR ACL</button>
+    </div>
 
-    <input id="aclName" placeholder="Nombre del ACL">
-    <button onclick="giveACL()">DAR ACL</button>
+    <div id="noPerm" class="hidden" style="color:#888;margin-top:15px;">
+        ❌ No tienes permiso para dar ACL
+    </div>
 
-    <button onclick="logout()">Cerrar sesión</button>
+    <hr>
+    <button onclick="logout()">🚪 Cerrar sesión</button>
 </div>
 
 <script>
@@ -155,7 +184,7 @@ if(localStorage.getItem("session")==="true"){
     showGenerator()
 }
 
-// CAMBIOS
+// VISTAS
 function showRegister(){
     loginBox.classList.add("hidden")
     registerBox.classList.remove("hidden")
@@ -176,30 +205,35 @@ function showGenerator(){
 
     const acl = localStorage.getItem("acl_"+user)
     aclStatus.textContent = acl ? acl : "SIN ACL"
+
+    // PERMISOS
+    if(user === "Luis"){
+        aclPanel.classList.remove("hidden")
+        roleBadge.textContent = "ADMIN"
+        roleBadge.className = "badge admin"
+    }else{
+        noPerm.classList.remove("hidden")
+    }
 }
 
 // REGISTRO
 function register(){
-    const user = regUser.value.trim()
-    const pass = regPass.value.trim()
-
-    if(!user || !pass){
+    if(!regUser.value || !regPass.value){
         regError.style.display="block"
         return
     }
-
-    localStorage.setItem("user",user)
-    localStorage.setItem("pass",pass)
+    localStorage.setItem("user",regUser.value)
+    localStorage.setItem("pass",regPass.value)
     alert("Cuenta creada correctamente ✅")
     showLogin()
 }
 
 // LOGIN
 function login(){
-    const user = loginUser.value
-    const pass = loginPass.value
-
-    if(user===localStorage.getItem("user") && pass===localStorage.getItem("pass")){
+    if(
+        loginUser.value === localStorage.getItem("user") &&
+        loginPass.value === localStorage.getItem("pass")
+    ){
         localStorage.setItem("session","true")
         showGenerator()
     }else{
@@ -213,21 +247,16 @@ function logout(){
     location.reload()
 }
 
-// GENERADOR ID
+// ID
 function generateID(){
-    const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    const c="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     let id=""
-    for(let i=0;i<8;i++){
-        id+=chars[Math.floor(Math.random()*chars.length)]
-    }
+    for(let i=0;i<8;i++) id+=c[Math.floor(Math.random()*c.length)]
     generatedID.textContent=id
 }
 
 function copyID(){
-    if(generatedID.textContent==="---"){
-        alert("Genera un ID primero")
-        return
-    }
+    if(generatedID.textContent==="---") return alert("Genera un ID primero")
     navigator.clipboard.writeText(generatedID.textContent)
     alert("ID copiado ✔")
 }
@@ -236,15 +265,10 @@ function copyID(){
 function giveACL(){
     const acl = aclName.value.trim()
     const user = localStorage.getItem("user")
-
-    if(!acl){
-        alert("Escribe el nombre del ACL")
-        return
-    }
-
+    if(!acl) return alert("Escribe el nombre del ACL")
     localStorage.setItem("acl_"+user,acl)
     aclStatus.textContent = acl
-    alert("ACL asignado correctamente 🔐")
+    alert("ACL asignado 🔐")
 }
 </script>
 
